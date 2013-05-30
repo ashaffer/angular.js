@@ -57,8 +57,8 @@ function $ControllerProvider() {
      * a service, so that one can override this service with {@link https://gist.github.com/1649788
      * BC version}.
      */
-    return function(expression, locals) {
-      var instance, match, constructor, identifier;
+    return function(expression, locals, instance) {
+      var match, constructor, identifier;
 
       if(isString(expression)) {
         match = expression.match(CNTRL_REG),
@@ -71,7 +71,7 @@ function $ControllerProvider() {
         assertArgFn(expression, constructor, true);
       }
 
-      instance = $injector.instantiate(expression, locals);
+      instance = $injector.instantiate(expression, locals, instance);
 
       if (identifier) {
         if (!(locals && typeof locals.$scope == 'object')) {

@@ -556,7 +556,16 @@ function createInjector(modulesToLoad) {
       var args = [],
           $inject = annotate(fn),
           length, i,
-          key;
+          key,
+          mixins = [];
+
+      if(isArray($inject[0])) {
+        mixins = $inject.shift();
+        var $controller = getService('$controller');
+        forEach(mixins, function(mixin) {
+          $controller(mixin, locals, self);
+        });
+      }
 
       for(i = 0, length = $inject.length; i < length; i++) {
         key = $inject[i];
@@ -592,14 +601,16 @@ function createInjector(modulesToLoad) {
       }
     }
 
-    function instantiate(Type, locals) {
+    function instantiate(Type, locals, instance) {
       var Constructor = function() {},
-          instance, returnedValue;
+          returnedValue;
 
-      // Check if Type is annotated and use just the given function at n-1 as parameter
-      // e.g. someModule.factory('greeter', ['$window', function(renamed$window) {}]);
-      Constructor.prototype = (isArray(Type) ? Type[Type.length - 1] : Type).prototype;
-      instance = new Constructor();
+      if(! instance) {
+        // Check if Type is annotated and use just the given function at n-1 as parameter
+        // e.g. someModule.factory('greeter', ['$window', function(renamed$window) {}]);
+        Constructor.prototype = (isArray(Type) ? Type[Type.length - 1] : Type).prototype;
+        instance = new Constructor();
+      }
       returnedValue = invoke(Type, instance, locals);
 
       return isObject(returnedValue) ? returnedValue : instance;
